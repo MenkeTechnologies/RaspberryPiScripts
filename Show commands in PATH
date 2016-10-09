@@ -1,0 +1,27 @@
+IFS=:
+
+sum=0
+
+arr=()
+
+for i in $PATH; do
+	ls $i &> /dev/null
+	if [[ $? = 0 ]]; then
+		let "sum += `ls $i | wc -w`"
+		arr+=(`ls $i`)
+	fi
+
+done
+
+echo -e "\E[37;44mThe number of commands is $sum"
+echo -e "Do you want to see the commands?\c"
+echo
+read -n1
+
+if [[ "$REPLY" = "y" ]]; then
+	for i in ${arr[*]}; do
+	echo -e "$i"
+done | sort -f | uniq | less
+fi
+echo
+echo -e "Done.\E[0m"
