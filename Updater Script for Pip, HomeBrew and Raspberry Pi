@@ -10,6 +10,6 @@ brew update
 brew upgrade
 
 echo -e "\033[44m\033[37mUpdating Pi Dependencies"
-ssh -t pi@ipp "yes | sudo apt-get update; yes | sudo apt-get upgrade"
+ssh -t pi@ip "yes | sudo apt-get update; yes | sudo apt-get upgrade"
 
 echo -e "Done\033[0m"
