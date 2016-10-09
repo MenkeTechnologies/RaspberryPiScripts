@@ -1,0 +1,6 @@
+echo -e "Uploading $*"
+for i in "$@"; do
+	scp -r -P PORTNO "$i" pi@IP:~/Desktop
+
+done
+echo -e "Done"
