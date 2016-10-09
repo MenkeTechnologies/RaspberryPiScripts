@@ -1,0 +1,10 @@
+
+while [[ 0 ]]; do
+
+
+	for i in `say -v ? | awk '{print $1}' | sort -r`; do
+	echo "The voice is $i"
+	say -v $i "$1"
+
+done
+done
