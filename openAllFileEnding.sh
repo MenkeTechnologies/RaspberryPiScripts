@@ -1,5 +1,7 @@
 #!/usr/local/bin/bash
 
+printf "\E[37;44m"
+
 displayProgress(){
 spinner="\|/-" # spinner
 chars=1 # number of characters to display
@@ -42,12 +44,16 @@ if [[ $# == 0 ]]; then
 	exit
 fi
 
+
+
 #set the fileExtension variable to first argument
 fileExtension="$1"
 #array
 filesArray=()
 
 startCursor
+#if user prematurely hits control c then we need to kill the cursor and then exit
+trap 'killCursor; echo; exit' INT
 
 #process substituion to find all files with the fileExtension
 while read line; do
@@ -89,3 +95,6 @@ else
 	#start prompt on next line
 	echo
 fi
+
+
+printf "\E[0m"
