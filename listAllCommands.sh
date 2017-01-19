@@ -31,7 +31,7 @@ read -n1
 if [[ "$REPLY" == "y" ]]; then
 	for i in ${arr[*]}; do
 	echo -e "$i"
-#sort the array and get rid of duplicates and use less pager
+#sort the array (-f ignore case) and get rid of duplicates and use less pager
 done | sort -f | uniq | less 
 fi
 #newline
