@@ -13,10 +13,10 @@ for i in $outdated; do
 	pip install --upgrade $i #&> /dev/null
 done
 
-echo "\E[44;37mUpdating Ruby Dependencies"
+echo -e "\E[44;37mUpdating Ruby Dependencies"
 gem update
 
-echo "\E[44;37mUpdating Homebrew Dependencies"
+echo -e "\E[44;37mUpdating Homebrew Dependencies"
 brew update #&> /dev/null
 brew upgrade #&> /dev/null
 #remote old programs occupying disk sectors
