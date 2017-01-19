@@ -1,13 +1,13 @@
 #dialog --title "MSG BOX" --infobox "Starting Updater" 40 70
 #clear screen
 clear
-#start white text on blue background \E44:37m
+#start white text on blue background \E44:37m, -e required for escape sequences
 echo -e "\E[44;37mUpdating Python Dependencies"
 #pip lists outdated programs and get first column with awk
 #store in outdated
 outdated=`pip list --outdated | awk '{print $1}'`
 
-#install outd
+#install outdated Python programs
 pip install --upgrade pip &> /dev/null
 for i in $outdated; do
 	pip install --upgrade $i #&> /dev/null
