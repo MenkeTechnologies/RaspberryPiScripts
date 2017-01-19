@@ -10,20 +10,21 @@ E_NOT_FOUND=71
 E_CHANGED_MIND=72
 
 
-arr=(  '|' '\' '-' '/' )
-revarr=( '|' '/' '-' '\')
+
 
 displayProgress(){
 
-  while [[ 1 ]]; do
-    tput civis
-    tput bold
+  local arr=(  '|' '\' '-' '/' )
+  local revarr=( '|' '/' '-' '\')
+
+  while [[ true ]]; do
     for i in {0..1}; do
 
       for k in "${arr[@]}"; do
         printf "$k"
-
+        #move cursor left
         tput cub 1
+        #animation rate
         sleep 0.1
       done
 
@@ -35,15 +36,22 @@ displayProgress(){
 }
 
 startCursor(){
+  #cursor is invisible
   tput civis
+  #bold text
   tput bold
+  #startCursor in background
   displayProgress &
+  #store its PID so can kill later
   progress_pid=$!
 }
 
 killCursor(){
+  #kill cursor with PID store in startCursor
   kill $progress_pid
+  #discard error message
   wait $progress_pid 2>/dev/null
+  #restore prompt
   tput cnorm
 }
 
@@ -64,9 +72,10 @@ for i in "$@"; do
   printf "Are you sure you want to blot out \"$file\" (y/n)? "; 
   startCursor
   read -n1 answer
-
+  #newline
+  echo
   case "$answer" in
-    [nN]) echo;echo "Bye"
+    [nN]) echo "Bye"
     killCursor
     exit $E_CHANGED_MIND;;
     *)    echo "Blotting out file \"$file\".";;
