@@ -1,3 +1,3 @@
 # RaspberryPiScripts
 
-Various shell scripts for the RPI
+Various shell scripts for the RPI and macOS.
