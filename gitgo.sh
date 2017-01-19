@@ -1,122 +1,172 @@
 #!/usr/local/bin/bash
 #created by JAKOBMENKE --> Fri Jan 13 22:25:46 EST 2017 
-printf "\E[37;44m"
 
-#functions
+#for debugging uncomment next line
+# set -x
+
+#GITHUB_ACCOUNT environment variable needed for the script to create a remote repository
+
+##########################################
+###############  functions  ##############
+##########################################
+prettyPrint(){
+	#print white text 37m on blue background 44m
+	printf "\E[37;44m"
+	printf "$1"
+	printf "\E[0m\n"
+}
 
 initializeGitDirectory(){
-	#there is no .git directory
+#there is no .git directory
 if [[ ! -d ".git" ]]; then
-	printf "Do you want to initialize this directory with Git?\n"
+	prettyPrint "Do you want to initialize this directory with Git?"
+	#read one character
 	read -n1
 	echo
 	case "$REPLY" in
-		[yY] ) git init; DONE=false; getRemoteDetails ;;
-			*)
+		#if yes then create .git and call getRemoteDetails
+		[yY] ) git init; getRemoteDetails ;;
+		#exit if command executed by accident for example
+			*) exit
 	esac
-	#if user says no, then exitting because DONE=true
 else
-	#there is a .git directory but no setup for remote
-	if [[ "$(git remote)" == "" ]]; then
+	if [[ -z "$(git remote)" ]]; then
+		#there is a .git directory but no setup for remote so call getRemoteDetails
 		getRemoteDetails
-	fi
-	#if user inputted just gc then done at this point
-	#if user inputted a parm then keep on going
-	if [[ "$1" != "" && "$PULL_URL" == "" ]]; then
-		DONE=false
 	else
-		if [[ "$PULL_URL" != "" ]]; then	
-			printf "Must have a commitMessage.\n"
-
-		fi
+		#there is a .git directory and there is setup for remote so exit
+		prettyPrint "Already initialized."
+		exit
 	fi
+
 fi
 }
 
-commitTheDirectory(){
-	printf "Commiting to $ORIGIN with message $commitMessage\n"
-	git add .
-	git commit -m "$commitMessage"
-	git push "$ORIGIN" master
-	export ORIGIN="$ORIGIN"
-
-}
+#create remote repository on Github
 
 getRemoteDetails(){
-	printf "What is the name of your Repository to create?\n"
-	read REPO_NAME_TO_CREATE
-	curl -u 'MenkeTechnologies' https://api.github.com/user/repos -d {\"name\":\"$REPO_NAME_TO_CREATE\"}
+	#if function was called with no arguments
+	if [[ -z "$1" ]]; then
+		prettyPrint "What is the name of your Repository to create?"
+		read REPO_NAME_TO_CREATE
+	#function called with at least one argument
+	else
+		prettyPrint "Remaking Deleted Repository."
+		REPO_NAME_TO_CREATE="$1"
+	fi
+	
+	#use environment variable GITHUB_ACCOUNT to create remote repository from script
+	curl -u "$GITHUB_ACCOUNT" https://api.github.com/user/repos -d {\"name\":\"$REPO_NAME_TO_CREATE\"}
+	#clear output from curl request
 	clear
-	printf "What is your origin?\n"
-	read ORGIN_NAME
-	URL="https://github.com/MenkeTechnologies/$REPO_NAME_TO_CREATE"
-	git remote add "$ORGIN_NAME" "$URL"
+
+	#get origin from git remote -v if the origin has been established
+	#awk to print first column, tail for last line and tr to delete any spaces
+	local ORGIN_NAME="$(git remote -v | awk '{print $1}' | tail -1 | tr -d ' ')"
+	if [[ -z "$ORGIN_NAME" ]]; then
+		#no origin so prompt for it
+		prettyPrint "What is your origin?"
+		read ORGIN_NAME
+	fi
+	#concat url from variables
+	local URL="https://github.com/$GITHUB_ACCOUNT/$REPO_NAME_TO_CREATE"
+	#add the remote repository
+	git remote add "$ORGIN_NAME" "$URL" 2> /dev/null
 	getInitialCommit
 }
 
 getInitialCommit(){
-	printf "What is your commit message?\n"
+	prettyPrint "What is your commit message?"
 	read commitMessage
-	ORIGIN="$ORGIN_NAME"
-	commitTheDirectory
+	commitTheDirectory "$commitMessage"
 }
 
 usage(){
-
+	#prettyPrint format
+	printf "\E[37;44m"
+	#if argument passed in then print it
+	if [[ ! -z "$1" ]]; then
+		printf "$1\n"
+	fi
+	#here doc for printing multiline
 cat <<Endofmessage
 usage:
 	-h	help
-	-p 	pull from Repo
+	-l 	pull from Repo
+	-p 	<COMMIT_MESSAGE> push to Repo
+	-c 	init Repo
 Endofmessage
-
+	printf "\E[0m"
 }
 
 gitPull(){
-	PULL_URL="$(git remote -v | awk '{print $2}' | tail -1 | tr -d ' ')"
-	git pull "$PULL_URL"
+	#if .git directory exists and remote repository established
+	if [[ -d ".git" && ! -z "$(git remote)" ]]; then
+		local PULL_URL="$(git remote -v | awk '{print $2}' | tail -1 | tr -d ' ')"
+		git pull "$PULL_URL"
+	else
+		usage "No Remote Repository established."
+		exit
+	fi
 
 }
 
-#get options
-PULL_URL=""
+gitPush(){
+	#check for argument
+	if [[ -z "$1" ]]; then
+			usage "Need a commit message."
+			exit
+	fi
+	#if .git directory exists and remote repository established
+	if [[ -d ".git" && ! -z "$(git remote)" ]]; then
+		commitTheDirectory "$1"
+	else
+		usage "No Remote Repository established."
+		exit
+	fi
+}
 
-optstring=phc
+commitTheDirectory(){
+	#commitMessage is first argument
+	local commitMessage="$1"
+	local ORIGIN="$(git remote -v | awk '{print $1}' | tail -1 | tr -d ' ')"
+	prettyPrint "Commiting to $ORIGIN with message $commitMessage"
+	git add .
+	git commit -m "$commitMessage"
+	git push "$ORIGIN" master
+	#if error then need to establish remote repository
+	if [[ $? > 0 ]]; then
+		local REPO_NAME="$(git remote -v | awk '{print $2}' | tail -1 | tr -d ' ')"
+		getRemoteDetails "${REPO_NAME##*/}"
+	fi	
+}
+
+##########################################
+###############    MAIN     ##############
+##########################################
+
+#possible options to script= -h for help, -p with argument to push with commit,
+#-l to pull from github, and -c to create repo
+#only one option at a time forced with break
+optstring=p:hcl
 while getopts $optstring opt
 do
   case $opt in
-  	c) initializeGitDirectory
-    p) gitPull;;
-    h) usage;;
-    *)
+  	h) usage; break;;
+  	c) initializeGitDirectory;break;;
+    l) gitPull;break;;
+	p) gitPush "$OPTARG";break;;
+    *) usage;;
 esac
 done
 
-DONE=true
-
-
-if [[ $DONE == false ]]; then
-	if [[ "$1" == "" ]]; then
-		printf ""
+#if no options and no arguments passed to script then commit with "default-commit"
+#if no options and 1 argument then commit with 1 argument
+#gitPush function checks for presence of .git directory
+if [[ $OPTIND == 1 ]]; then
+	if [[ -z "$1" ]]; then
+		gitPush "default-commit"
 	else
-		commitMessage="$1"
-		if [[ $2 == "" ]]; then
-
-			if [[ $ORIGIN != "$(git remote)" ]]; then
-				printf "Need a second argument for the origin name due to change of directory.\n"
-				printf "your choices are \"$(git remote)\"\n"
-			else
-			#origin was found in env
-			commitTheDirectory
-
-			fi
-		else
-			#origin was not found in env so grab from positional parm 2
-			ORIGIN="$2"
-			commitTheDirectory
-		fi
-
+		gitPush "$1"
 	fi
 fi
-
-printf "\E[0m"
-
