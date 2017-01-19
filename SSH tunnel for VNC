@@ -1,1 +1,3 @@
+#C option to compress stream
+#L option to forward port 5902 on localhots to port 5901 on remote host
 ssh -C -L 5902:localhost:5901 pi@IP
