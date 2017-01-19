@@ -14,12 +14,3 @@ while read -d "" event; do
 
 
 done < <(fswatch -r -0 -E "$DIR_WATCHING" -e "/\.." )
-
-
-
-
-for i in "$@"; do
-	scp -r -P 7778 "$i" "$ADDRESS" 2>/dev/null
-
-done
-echo -e "Done${RESET}"
