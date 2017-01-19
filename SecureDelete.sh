@@ -55,6 +55,7 @@ killCursor(){
   tput cnorm
 }
 
+#if user prematurely hits control c then we need to kill the cursor and then exit
 trap 'killCursor; echo; exit' INT
 
 if [[ -z "$1" ]]; then
