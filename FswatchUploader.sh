@@ -18,8 +18,8 @@ while read -d "" event; do
 	echo "The event was $event"
 	
 	echo "Uploading $event to $ADDRESS"
-	#upload using scop
-	scp -r "$event" "$ADDRESS" 2>/dev/null
+	#upload using scp recursively and using port 22
+	scp -r -P 22 "$event" "$ADDRESS"
 	#using fswatch command, avaiable at https://github.com/emcrisostomo/fswatch,
 	#r for recursive option, E for extended regex, e to exclude .git and .idea etc from triggering
 	#watch service, 0 to use null \0 character as delimiter
