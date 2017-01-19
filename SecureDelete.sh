@@ -55,6 +55,8 @@ killCursor(){
   tput cnorm
 }
 
+trap 'killCursor; echo; exit' INT
+
 if [[ -z "$1" ]]; then
   echo "Usage: `basename $0` filename"
   exit $E_BADARGS
