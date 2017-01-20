@@ -1,3 +1,6 @@
+#!/usr/local/bin/bash
+#created by JAKOBMENKE --> Fri Jan 20 16:24:16 EST 2017
+
 executableScriptsProcessing(){
 	# then make it executable
 	chmod 700 "$newfile"
@@ -36,22 +39,25 @@ fi
 #file name is the first argument
 newfile="$1"
 
+set -x
+
 #check ending on file name and call createTheFile passing in argument for file ending
-if [[ "$newfile" =~ .*.sh ]]; then
+if [[ "$newfile" =~ .*\.sh ]]; then
 	createTheFile .sh
-elif [[ "$newfile" =~ .*.pl ]]; then
+elif [[ "$newfile" =~ .*\.pl ]]; then
 	createTheFile .pl
-elif [[ "$newfile" =~ .*.rb ]]; then
+elif [[ "$newfile" =~ .*\.rb ]]; then
 	createTheFile .rb
-elif [[ "$newfile" =~ .*.py ]]; then
+elif [[ "$newfile" =~ .*\.py ]]; then
 	createTheFile .py
-elif [[ "$newfile" =~ .*.txt ]]; then  #.txt
+elif [[ "$newfile" =~ .*\.txt ]]; then  #.txt
 	createTheFile .txt text
 else
 	#if no file ending default to text file
 	#construct file with ending of .txt
 	#call createTheFile with 2 arguments
 	newfile="$newfile".txt
+	echo "the newfile is $newfile"
 	createTheFile .txt text
 fi
 
