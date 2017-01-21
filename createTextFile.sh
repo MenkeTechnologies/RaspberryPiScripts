@@ -51,13 +51,13 @@ elif [[ "$newfile" =~ .*\.rb ]]; then
 elif [[ "$newfile" =~ .*\.py ]]; then
 	createTheFile .py
 elif [[ "$newfile" =~ .*\.txt ]]; then  #.txt
-	createTheFile .txt text
+	createTheFile .txt
 else
 	#if no file ending default to text file
 	#construct file with ending of .txt
 	#call createTheFile with 2 arguments
 	newfile="$newfile".txt
 	echo "the newfile is $newfile"
-	createTheFile .txt text
+	createTheFile .txt
 fi
 
